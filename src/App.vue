@@ -22,6 +22,7 @@
           <li v-for="(task, index) in filteredTodos" :key="task.id" :class="{ checked: task.checked }" @click="toggleTask(task)">
             {{ task.text }}
             <span @click.stop="removeTask(task)">&#xd7;</span>
+            <span @click.stop="editTask(task)">✎</span>
           </li>
         </ul>
       </div>
@@ -32,57 +33,62 @@
   </template>
   
   <script setup>
-  
-  
-  import { ref, computed } from 'vue';
-  
-  const newTask = ref('');
-  
-  const tasks = ref([]);
+import { ref, computed } from 'vue';
 
-  const hideCompleted = ref(false);
-  const muted = ref(false);
-  
-  const volume = ref(1);
-  const filteredTodos = computed(() => {
-    return hideCompleted.value
-      ? tasks.value.filter((task) => !task.checked)
-      : tasks.value;
-  });
-  function addTask() {
-    if (newTask.value.trim() === '') {
-      alert("Isi terlebih dahulu!");
-    } else {
-      tasks.value.unshift({ id: Date.now(), text: newTask.value, checked: false });
-      newTask.value = '';
-      saveData();
-    }
-  }
-  function toggleTask(task) {
-    task.checked = !task.checked; 
+const newTask = ref('');
+const tasks = ref([]);
+const hideCompleted = ref(false);
+
+const filteredTodos = computed(() => {
+  return hideCompleted.value
+    ? tasks.value.filter((task) => !task.checked)
+    : tasks.value;
+});
+
+function addTask() {
+  if (newTask.value.trim() === '') {
+    alert("Isi terlebih dahulu!");
+  } else {
+    tasks.value.unshift({ id: Date.now(), text: newTask.value, checked: false });
+    newTask.value = '';
     saveData();
   }
-  function removeTask(task) {
-    const index = tasks.value.findIndex((t) => t.id === task.id);
-    if (index !== -1) {
-      tasks.value.splice(index, 1);
-      saveData();
-    }
+}
+
+function toggleTask(task) {
+  task.checked = !task.checked;
+  saveData();
+}
+
+function removeTask(task) {
+  const index = tasks.value.findIndex((t) => t.id === task.id);
+  if (index !== -1) {
+    tasks.value.splice(index, 1);
+    saveData();
   }
+}
 
-
-
-
-
-  function saveData() {
-    localStorage.setItem("tasks", JSON.stringify(tasks.value));
+function editTask(task) {
+  const newText = prompt("Edit task:", task.text);
+  if (newText !== null) {
+    task.text = newText;
+    saveData();
   }
-  function loadData() {
-    const savedTasks = localStorage.getItem("tasks");
-    tasks.value = savedTasks ? JSON.parse(savedTasks) : [];
-  }
-  loadData();
-  </script>
+}
+
+function saveData() {
+  localStorage.setItem("tasks", JSON.stringify(tasks.value));
+}
+
+function loadData() {
+  const savedTasks = localStorage.getItem("tasks");
+  tasks.value = savedTasks ? JSON.parse(savedTasks) : [];
+}
+
+loadData();
+</script>
+
+
   
   <style scoped>
   .container {
